@@ -1,0 +1,7 @@
+{
+    "require": {
+        "jv-conseil/dkim-php-mail-signature": "^1.2",
+        "pear/net_dns2": "^1.5",
+        "phpseclib/phpseclib": "^3.0"
+    }
+}
