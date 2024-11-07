@@ -94,6 +94,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
 
         // Add order by clause
         $query .= " ORDER BY time DESC";
+        $prepared_query = $wpdb->prepare($query, $params);
 
         if (isset($_POST['action']) == 'delete_all' || isset($_POST['delete'])) {
             if (isset($_POST['element']) && $_POST['action'] == 'delete_all') {
@@ -121,7 +122,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
             wp_mail($to, $subject, $message, $headers, $attachments);
         }
 
-        $this->table_data = $wpdb->get_results($wpdb->prepare($query, $params), ARRAY_A);
+        $this->table_data = $wpdb->get_results($prepared_query, ARRAY_A);
         $columns = $this->get_columns();
         $subsubsub = $this->views();
         $hidden = (is_array(get_user_meta(get_current_user_id(), 'aaa', true))) ? get_user_meta(get_current_user_id(), 'dff', true) : array();
