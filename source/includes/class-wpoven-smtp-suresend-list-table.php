@@ -100,7 +100,9 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
 
         if (isset($_POST['resend'])) {
             $id =  $_POST['resend'];
-            $single_row = $wpdb->get_results("SELECT * FROM $table_name WHERE id = $id ");
+            $single_row = $wpdb->get_results( 
+                $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $id ) 
+            );
             $to = $single_row[0]->recipient;
             $subject = $single_row[0]->subject;
             $headers = $single_row[0]->headers;
