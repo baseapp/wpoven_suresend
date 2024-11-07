@@ -94,7 +94,14 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
 
         // Add order by clause
         $query .= " ORDER BY time DESC";
-        $prepared_query = $wpdb->prepare($query, $params);
+        // Prepare and execute the query with placeholders
+        if ($params) {
+            // Prepare the query only if there are parameters to bind
+            $prepared_query = $wpdb->prepare($query, ...$params);
+        } else {
+            // No parameters to bind, so use the query as is
+            $prepared_query = $query;
+        }
 
         if (isset($_POST['action']) == 'delete_all' || isset($_POST['delete'])) {
             if (isset($_POST['element']) && $_POST['action'] == 'delete_all') {
