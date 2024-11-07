@@ -84,15 +84,19 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
             $search_term = sanitize_text_field($_POST['s']);
             $search_columns = ['time', 'recipient', 'subject', 'status'];
 
-            $search_wildcards = array_fill(0, count($search_columns), '%' . $wpdb->esc_like($search_term) . '%');
-            $search_conditions = array_map(function ($column) {
-                return "$column LIKE %s";
-            }, $search_columns);
+            // Escape the search term and create wildcards for the LIKE condition
+            $search_wildcards = '%' . $wpdb->esc_like($search_term) . '%';
 
-            $this->table_data = $wpdb->get_results($wpdb->prepare(
-                "SELECT * FROM {$table_name} WHERE (" . implode(" OR ", $search_conditions) . ")",
-                $search_wildcards
-            ), ARRAY_A);
+            // Build the conditions dynamically using placeholders for each column
+            $search_conditions = [];
+            foreach ($search_columns as $column) {
+                $search_conditions[] = $column . " LIKE %s";
+            }
+            // Prepare and execute the query, passing the search wildcard for each condition
+            $this->table_data = $wpdb->get_results(
+                $wpdb->prepare("SELECT * FROM {$table_name} WHERE (" . implode(" OR ", $search_conditions) . ")", ...array_fill(0, count($search_columns), $search_wildcards)),
+                ARRAY_A
+            );
         }
 
 
