@@ -139,7 +139,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
     private function get_table_data($query)
     {
         global $wpdb;
-        return $wpdb->get_results($wpdb->prepare($query, $value = null), ARRAY_A);
+        return $wpdb->get_results($wpdb->prepare($query, ARRAY_A), ARRAY_A);
     }
 
     //Get column default
