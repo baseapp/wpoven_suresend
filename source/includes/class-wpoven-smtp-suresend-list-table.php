@@ -65,22 +65,33 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
     function prepare_items()
     {
         global $wpdb;
-        $table_name = $wpdb->prefix . 'wpoven_smtp_suresend_logs';
-        $query = "SELECT * FROM {$table_name} ";
+        $table_name = esc_sql($wpdb->prefix . 'wpoven_smtp_suresend_logs');
+
+        $query = $wpdb->prepare("SELECT * FROM {$table_name}");
 
         if (isset($_GET['action'])) {
-            $action = $_GET['action'];
-            $statusCondition = ($action === 'success' || $action === 'failed') ? " AND status = '$action'" : '';
-            $query .= " WHERE 1 $statusCondition ORDER BY time DESC";
+            $action = sanitize_text_field($_GET['action']);
+            if ($action === 'success' || $action === 'failed') {
+                $query = $wpdb->prepare(
+                    "SELECT * FROM {$table_name} WHERE status = %s ORDER BY time DESC",
+                    $action
+                );
+            }
         }
 
-        if (isset($_POST['s'])) {
-            $columns = array('time', 'recipient', 'subject', 'status');
-            $conditions = array();
-            foreach ($columns as $column) {
-                $conditions[] = "{$column} LIKE '%'" . $wpdb->esc_like($_POST['s']) . '%';
-            }
-            $query .= " WHERE " . implode(" OR ", $conditions);
+        if (isset($_POST['s']) && !empty($_POST['s'])) {
+            $search_term = sanitize_text_field($_POST['s']);
+            $search_columns = ['time', 'recipient', 'subject', 'status'];
+
+            $search_wildcards = array_fill(0, count($search_columns), '%' . $wpdb->esc_like($search_term) . '%');
+            $search_conditions = array_map(function ($column) {
+                return "$column LIKE %s";
+            }, $search_columns);
+
+            $query = $wpdb->prepare(
+                "SELECT * FROM {$table_name} WHERE (" . implode(" OR ", $search_conditions) . ")",
+                $search_wildcards
+            );
         }
 
         if (isset($_POST['action']) == 'delete_all' || isset($_POST['delete'])) {
@@ -101,7 +112,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
         if (isset($_POST['resend'])) {
             $id =  $_POST['resend'];
             $single_row = $wpdb->get_results( 
-                $wpdb->prepare( "SELECT * FROM $table_name WHERE id = %d", $id ) 
+                $wpdb->prepare( "SELECT * FROM %s WHERE id = %d", $table_name, $id ) 
             );
             $to = $single_row[0]->recipient;
             $subject = $single_row[0]->subject;
