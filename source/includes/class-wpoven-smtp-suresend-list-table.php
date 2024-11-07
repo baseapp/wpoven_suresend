@@ -66,41 +66,21 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
     {
         global $wpdb;
         $table_name = $wpdb->prefix . 'wpoven_smtp_suresend_logs';
-        $query = "SELECT * FROM {$table_name} WHERE 1=1";
-        $params = [];
+        $query = "SELECT * FROM {$table_name} ";
 
-        // Check if an action is specified
         if (isset($_GET['action'])) {
             $action = $_GET['action'];
-            if ($action === 'success' || $action === 'failed') {
-                $query .= " AND status = %s";
-                $params[] = $action;
-            }
+            $statusCondition = ($action === 'success' || $action === 'failed') ? " AND status = '$action'" : '';
+            $query .= " WHERE 1 $statusCondition ORDER BY time DESC";
         }
 
-        // Check if a search term is provided
         if (isset($_POST['s'])) {
-            $search_term = $_POST['s'];
             $columns = array('time', 'recipient', 'subject', 'status');
-            $conditions = [];
-
+            $conditions = array();
             foreach ($columns as $column) {
-                $conditions[] = "{$column} LIKE %s";
-                $params[] = '%' . $wpdb->esc_like($search_term) . '%';
+                $conditions[] = "{$column} LIKE '%'" . $wpdb->esc_like($_POST['s']) . '%';
             }
-
-            $query .= " AND (" . implode(" OR ", $conditions) . ")";
-        }
-
-        // Add order by clause
-        $query .= " ORDER BY time DESC";
-        // Prepare and execute the query with placeholders
-        if ($params) {
-            // Prepare the query only if there are parameters to bind
-            $prepared_query = $wpdb->prepare($query, ...$params);
-        } else {
-            // No parameters to bind, so use the query as is
-            $prepared_query = $query;
+            $query .= " WHERE " . implode(" OR ", $conditions);
         }
 
         if (isset($_POST['action']) == 'delete_all' || isset($_POST['delete'])) {
@@ -129,7 +109,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
             wp_mail($to, $subject, $message, $headers, $attachments);
         }
 
-        $this->table_data = $wpdb->get_results($prepared_query, ARRAY_A);
+        $this->table_data = $this->get_table_data($query);
         $columns = $this->get_columns();
         $subsubsub = $this->views();
         $hidden = (is_array(get_user_meta(get_current_user_id(), 'aaa', true))) ? get_user_meta(get_current_user_id(), 'dff', true) : array();
@@ -156,11 +136,11 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
     }
 
     // Get table data
-    // private function get_table_data($query)
-    // {
-    //     global $wpdb;
-    //     return $wpdb->get_results($wpdb->prepare($query, []), ARRAY_A);
-    // }
+    private function get_table_data($query)
+    {
+        global $wpdb;
+        return $wpdb->get_results($query, ARRAY_A);
+    }
 
     //Get column default
     function column_default($item, $column_name)
