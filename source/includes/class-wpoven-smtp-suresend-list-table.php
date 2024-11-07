@@ -67,15 +67,36 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
         global $wpdb;
         $table_name = esc_sql($wpdb->prefix . 'wpoven_smtp_suresend_logs');
 
-        $query = $wpdb->prepare("SELECT * FROM {$table_name}");
+        // Prepare the base query
+        $query = "SELECT * FROM {$table_name}";
 
+        // Check if action is set and sanitize the value
         if (isset($_GET['action'])) {
-            $action = esc_sql(sanitize_text_field($_GET['action']));
+            // Unsanitize (unslash) before sanitizing
+            $action = wp_unslash(sanitize_text_field($_GET['action']));
+
+            // Validate the action value before using it
             if ($action === 'success' || $action === 'failed') {
                 $query = $wpdb->prepare(
-                    "SELECT * FROM {$table_name} WHERE status = {$action} ORDER BY time DESC");
+                    "SELECT * FROM {$table_name} WHERE status = %s ORDER BY time DESC",
+                    $action
+                );
             }
         }
+
+        // Retrieve the results securely
+        $this->table_data = $wpdb->get_results($query, ARRAY_A);
+
+        // Consider adding caching to optimize performance
+        $cache_key = 'wpoven_smtp_suresend_logs_' . md5($query);
+        $cached_data = wp_cache_get($cache_key);
+
+        if ($cached_data === false) {
+            $cached_data = $wpdb->get_results($query, ARRAY_A);
+            wp_cache_set($cache_key, $cached_data, '', 3600); // Cache for 1 hour
+        }
+
+        $this->table_data = $cached_data;
 
         // if (isset($_POST['s']) && !empty($_POST['s'])) {
         //     $search_term = sanitize_text_field($_POST['s']);
@@ -92,7 +113,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
         //     );
         // }
 
-        $this->table_data = $wpdb->get_results($query, ARRAY_A);
+
 
         if (isset($_POST['action']) == 'delete_all' || isset($_POST['delete'])) {
             if (isset($_POST['element']) && $_POST['action'] == 'delete_all') {
@@ -111,8 +132,8 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
 
         if (isset($_POST['resend'])) {
             $id =  $_POST['resend'];
-            $single_row = $wpdb->get_results( 
-                $wpdb->prepare( "SELECT * FROM %s WHERE id = %d", $table_name, $id ) 
+            $single_row = $wpdb->get_results(
+                $wpdb->prepare("SELECT * FROM %s WHERE id = %d", $table_name, $id)
             );
             $to = $single_row[0]->recipient;
             $subject = $single_row[0]->subject;
