@@ -94,6 +94,8 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
             );
         }
 
+        $this->table_data = $wpdb->get_results($wpdb->prepare($query), ARRAY_A);
+
         if (isset($_POST['action']) == 'delete_all' || isset($_POST['delete'])) {
             if (isset($_POST['element']) && $_POST['action'] == 'delete_all') {
                 $selectedLogIds = array_map('absint', $_POST['element']);
@@ -122,7 +124,6 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
             wp_mail($to, $subject, $message, $headers, $attachments);
         }
 
-        $this->table_data = $this->get_table_data($query);
         $columns = $this->get_columns();
         $subsubsub = $this->views();
         $hidden = (is_array(get_user_meta(get_current_user_id(), 'aaa', true))) ? get_user_meta(get_current_user_id(), 'dff', true) : array();
@@ -149,11 +150,11 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
     }
 
     // Get table data
-    private function get_table_data($query)
-    {
-        global $wpdb;
-        return $wpdb->get_results($query, ARRAY_A);
-    }
+    // private function get_table_data($query)
+    // {
+    //     global $wpdb;
+    //     return $wpdb->get_results($query, ARRAY_A);
+    // }
 
     //Get column default
     function column_default($item, $column_name)
