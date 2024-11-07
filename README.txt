@@ -23,7 +23,7 @@ WPOven SMTP Suresend is a powerful WordPress plugin designed to streamline email
 1. **Download the Plugin:**
    - To get the latest version of WPOven SMTP Suresend, you can either:
      - [Visit WPOven's website](https://www.wpoven.com/plugins/wpoven-smtp-suresend) to learn more about the plugin.
-     - Download directly from the GitHub repository: [Download](https://github.com/baseapp/wpoven_suresend/releases/download/1.0.0/wpoven-smtp-suresend-2024-11-06.zip).
+     - Download directly from the GitHub repository: [Download](https://github.com/baseapp/wpoven_suresend/releases/download/1.0.0/wpoven-smtp-suresend-2024-11-07.zip).
 
 2. **Upload the Plugin:**
    - Log in to your WordPress admin dashboard.
