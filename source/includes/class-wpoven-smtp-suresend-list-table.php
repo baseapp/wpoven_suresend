@@ -71,12 +71,8 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
 
         // Check if action is set and sanitize the value
         if (isset($_GET['action'])) {
-            // Unsanitize (unslash) before sanitizing
             $action = wp_unslash(sanitize_text_field($_GET['action']));
-
-            // Validate the action value before using it
             if ($action === 'success' || $action === 'failed') {
-                // Only use placeholders for the value, not the table name
                 $this->table_data = $wpdb->get_results($wpdb->prepare(
                     "SELECT * FROM {$table_name} WHERE status = %s ORDER BY time DESC",
                     $action
@@ -84,34 +80,20 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
             }
         }
 
-        // // Retrieve the results securely
-        // $this->table_data = $wpdb->get_results($query, ARRAY_A);
+        if (isset($_POST['s']) && !empty($_POST['s'])) {
+            $search_term = sanitize_text_field($_POST['s']);
+            $search_columns = ['time', 'recipient', 'subject', 'status'];
 
-        // Consider adding caching to optimize performance
-        // $cache_key = 'wpoven_smtp_suresend_logs_' . md5($query);
-        // $cached_data = wp_cache_get($cache_key);
+            $search_wildcards = array_fill(0, count($search_columns), '%' . $wpdb->esc_like($search_term) . '%');
+            $search_conditions = array_map(function ($column) {
+                return "$column LIKE %s";
+            }, $search_columns);
 
-        // if ($cached_data === false) {
-        //     $cached_data = $wpdb->get_results($query, ARRAY_A);
-        //     wp_cache_set($cache_key, $cached_data, '', 3600); // Cache for 1 hour
-        // }
-
-        //$this->table_data = $cached_data;
-
-        // if (isset($_POST['s']) && !empty($_POST['s'])) {
-        //     $search_term = sanitize_text_field($_POST['s']);
-        //     $search_columns = ['time', 'recipient', 'subject', 'status'];
-
-        //     $search_wildcards = array_fill(0, count($search_columns), '%' . $wpdb->esc_like($search_term) . '%');
-        //     $search_conditions = array_map(function ($column) {
-        //         return "$column LIKE %s";
-        //     }, $search_columns);
-
-        //     $query = $wpdb->prepare(
-        //         "SELECT * FROM {$table_name} WHERE (" . implode(" OR ", $search_conditions) . ")",
-        //         $search_wildcards
-        //     );
-        // }
+            $this->table_data = $wpdb->get_results($wpdb->prepare(
+                "SELECT * FROM {$table_name} WHERE (" . implode(" OR ", $search_conditions) . ")",
+                $search_wildcards
+            ), ARRAY_A);
+        }
 
 
 
@@ -167,13 +149,6 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
 
         $this->items = $this->table_data;
     }
-
-    // Get table data
-    // private function get_table_data($query)
-    // {
-    //     global $wpdb;
-    //     return $wpdb->get_results($query, ARRAY_A);
-    // }
 
     //Get column default
     function column_default($item, $column_name)
