@@ -78,7 +78,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
             $columns = array('time', 'recipient', 'subject', 'status');
             $conditions = array();
             foreach ($columns as $column) {
-                $conditions[] = $wpdb->prepare("{$column} LIKE %s", '%' . $wpdb->esc_like($_POST['s']) . '%');
+                $conditions[] = "{$column} LIKE '%'" . $wpdb->esc_like($_POST['s']) . '%';
             }
             $query .= " WHERE " . implode(" OR ", $conditions);
         }
@@ -139,7 +139,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
     private function get_table_data($query)
     {
         global $wpdb;
-        return $wpdb->get_results($query, ARRAY_A);
+        return $wpdb->get_results($wpdb->prepare($query), ARRAY_A);
     }
 
     //Get column default
@@ -222,7 +222,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
         if (!$success) {
             $success = 0;
         }
-        
+
         $failed = $wpdb->get_var("SELECT COUNT(*) FROM $table_name WHERE status = 'failed'");
         if (!$failed) {
             $failed = 0;
