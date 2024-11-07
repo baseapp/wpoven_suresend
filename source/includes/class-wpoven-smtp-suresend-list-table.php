@@ -67,36 +67,36 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
         global $wpdb;
         $table_name = esc_sql($wpdb->prefix . 'wpoven_smtp_suresend_logs');
 
-        // Prepare the base query
-        $query = "SELECT * FROM {$table_name}";
+        $this->table_data = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table_name}"), ARRAY_A);
 
         // Check if action is set and sanitize the value
         if (isset($_GET['action'])) {
             // Unsanitize (unslash) before sanitizing
-            $action = esc_sql(wp_unslash(sanitize_text_field($_GET['action'])));
+            $action = wp_unslash(sanitize_text_field($_GET['action']));
 
             // Validate the action value before using it
             if ($action === 'success' || $action === 'failed') {
                 // Only use placeholders for the value, not the table name
-                $query = $wpdb->prepare(
-                    "SELECT * FROM {$table_name} WHERE status = {$action} ORDER BY time DESC"
-                );
+                $this->table_data = $wpdb->get_results($wpdb->prepare(
+                    "SELECT * FROM {$table_name} WHERE status = %s ORDER BY time DESC",
+                    $action
+                ), ARRAY_A);
             }
         }
 
-        // Retrieve the results securely
-        $this->table_data = $wpdb->get_results($query, ARRAY_A);
+        // // Retrieve the results securely
+        // $this->table_data = $wpdb->get_results($query, ARRAY_A);
 
         // Consider adding caching to optimize performance
-        $cache_key = 'wpoven_smtp_suresend_logs_' . md5($query);
-        $cached_data = wp_cache_get($cache_key);
+        // $cache_key = 'wpoven_smtp_suresend_logs_' . md5($query);
+        // $cached_data = wp_cache_get($cache_key);
 
-        if ($cached_data === false) {
-            $cached_data = $wpdb->get_results($query, ARRAY_A);
-            wp_cache_set($cache_key, $cached_data, '', 3600); // Cache for 1 hour
-        }
+        // if ($cached_data === false) {
+        //     $cached_data = $wpdb->get_results($query, ARRAY_A);
+        //     wp_cache_set($cache_key, $cached_data, '', 3600); // Cache for 1 hour
+        // }
 
-        $this->table_data = $cached_data;
+        //$this->table_data = $cached_data;
 
         // if (isset($_POST['s']) && !empty($_POST['s'])) {
         //     $search_term = sanitize_text_field($_POST['s']);
