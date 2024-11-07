@@ -87,7 +87,6 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
             // Escape the search term and create wildcards for the LIKE condition
             $search_wildcards = '%' . $wpdb->esc_like($search_term) . '%';
 
-            // Build query conditions manually and prepare placeholders
             $conditions = [];
             $args = []; // Prepare arguments for the placeholders
 
@@ -96,14 +95,8 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
                 $conditions[] = "$column LIKE %s";
                 $args[] = $search_wildcards; // Append the escaped search term for each column
             }
-
             // Combine conditions with "OR"
             $where_clause = implode(' OR ', $conditions);
-
-            // Prepare and execute the query
-            //$query = "SELECT * FROM {$table_name} WHERE $where_clause";
-
-            // Execute the query with the arguments for each condition
             $this->table_data = $wpdb->get_results($wpdb->prepare("SELECT * FROM {$table_name} WHERE $where_clause", ...$args), ARRAY_A);
         }
 
