@@ -73,14 +73,13 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
         // Check if action is set and sanitize the value
         if (isset($_GET['action'])) {
             // Unsanitize (unslash) before sanitizing
-            $action = wp_unslash(sanitize_text_field($_GET['action']));
+            $action = esc_sql(wp_unslash(sanitize_text_field($_GET['action'])));
 
             // Validate the action value before using it
             if ($action === 'success' || $action === 'failed') {
                 // Only use placeholders for the value, not the table name
                 $query = $wpdb->prepare(
-                    "SELECT * FROM {$table_name} WHERE status = %s ORDER BY time DESC",
-                    $action
+                    "SELECT * FROM {$table_name} WHERE status = {$action} ORDER BY time DESC"
                 );
             }
         }
