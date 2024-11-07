@@ -68,7 +68,7 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
         $table_name = esc_sql($wpdb->prefix . 'wpoven_smtp_suresend_logs');
 
         // Prepare the base query
-        $query = $wpdb->prepare("SELECT * FROM %s", $table_name);
+        $query = "SELECT * FROM {$table_name}";
 
         // Check if action is set and sanitize the value
         if (isset($_GET['action'])) {
@@ -77,9 +77,10 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
 
             // Validate the action value before using it
             if ($action === 'success' || $action === 'failed') {
+                // Only use placeholders for the value, not the table name
                 $query = $wpdb->prepare(
-                    "SELECT * FROM %s WHERE status = %s ORDER BY time DESC",
-                    $table_name, $action
+                    "SELECT * FROM {$table_name} WHERE status = %s ORDER BY time DESC",
+                    $action
                 );
             }
         }
