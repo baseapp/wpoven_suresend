@@ -70,31 +70,29 @@ class WPOven_SMTP_Suresend_List_Table extends WP_List_Table
         $query = $wpdb->prepare("SELECT * FROM {$table_name}");
 
         if (isset($_GET['action'])) {
-            $action = sanitize_text_field($_GET['action']);
+            $action = esc_sql(sanitize_text_field($_GET['action']));
             if ($action === 'success' || $action === 'failed') {
                 $query = $wpdb->prepare(
-                    "SELECT * FROM {$table_name} WHERE status = %s ORDER BY time DESC",
-                    $action
-                );
+                    "SELECT * FROM {$table_name} WHERE status = {$action} ORDER BY time DESC");
             }
         }
 
-        if (isset($_POST['s']) && !empty($_POST['s'])) {
-            $search_term = sanitize_text_field($_POST['s']);
-            $search_columns = ['time', 'recipient', 'subject', 'status'];
+        // if (isset($_POST['s']) && !empty($_POST['s'])) {
+        //     $search_term = sanitize_text_field($_POST['s']);
+        //     $search_columns = ['time', 'recipient', 'subject', 'status'];
 
-            $search_wildcards = array_fill(0, count($search_columns), '%' . $wpdb->esc_like($search_term) . '%');
-            $search_conditions = array_map(function ($column) {
-                return "$column LIKE %s";
-            }, $search_columns);
+        //     $search_wildcards = array_fill(0, count($search_columns), '%' . $wpdb->esc_like($search_term) . '%');
+        //     $search_conditions = array_map(function ($column) {
+        //         return "$column LIKE %s";
+        //     }, $search_columns);
 
-            $query = $wpdb->prepare(
-                "SELECT * FROM {$table_name} WHERE (" . implode(" OR ", $search_conditions) . ")",
-                $search_wildcards
-            );
-        }
+        //     $query = $wpdb->prepare(
+        //         "SELECT * FROM {$table_name} WHERE (" . implode(" OR ", $search_conditions) . ")",
+        //         $search_wildcards
+        //     );
+        // }
 
-        $this->table_data = $wpdb->get_results($wpdb->prepare($query), ARRAY_A);
+        $this->table_data = $wpdb->get_results($query, ARRAY_A);
 
         if (isset($_POST['action']) == 'delete_all' || isset($_POST['delete'])) {
             if (isset($_POST['element']) && $_POST['action'] == 'delete_all') {
