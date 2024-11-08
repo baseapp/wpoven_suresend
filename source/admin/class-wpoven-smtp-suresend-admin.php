@@ -85,7 +85,9 @@ class Wpoven_Smtp_Suresend_Admin
 			require_once ABSPATH . 'wp-admin/includes/class-wp-list-table.php';
 			require_once plugin_dir_path(dirname(__FILE__)) . '/includes/class-wpoven-smtp-suresend-list-table.php';
 		}
+
 		require_once ABSPATH . WPINC . '/pluggable.php';
+
 		add_filter('wp_mail', [$this, 'log_email']);
 	}
 
@@ -315,10 +317,13 @@ class Wpoven_Smtp_Suresend_Admin
 	function wpoven_save_smtp_logs($to, $subject, $message, $headers, $status)
 	{
 		global $wpdb;
-		$table_name = $wpdb->prefix . 'wpoven_smtp_suresend_logs';
-		if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
-			$charset_collate = $wpdb->get_charset_collate();
-			$sql = "CREATE TABLE $table_name (
+		$options = get_option(WPOVEN_SMTP_SURESEND_SLUG);
+		$smtp_logging_status = isset($options['smtp-logging-status']) ? $options['smtp-logging-status'] : false;
+		if ($smtp_logging_status) {
+			$table_name = $wpdb->prefix . 'wpoven_smtp_suresend_logs';
+			if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+				$charset_collate = $wpdb->get_charset_collate();
+				$sql = "CREATE TABLE $table_name (
 					id INT NOT NULL AUTO_INCREMENT,
 					time DATETIME NOT NULL,
 					recipient VARCHAR(255) NOT NULL,
@@ -329,20 +334,21 @@ class Wpoven_Smtp_Suresend_Admin
 					smtplogs TEXT,
 					PRIMARY KEY (id)
     		) $charset_collate;";
-			require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-			dbDelta($sql);
+				require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+				dbDelta($sql);
+			}
+			$log = isset($_SESSION['debug_log']) ? $_SESSION['debug_log'] : null;
+			$data_to_insert = array(
+				'time' => current_time('mysql'),
+				'recipient' => sanitize_email($to),
+				'subject' => sanitize_text_field($subject),
+				'headers' => sanitize_text_field($headers),
+				'status' => sanitize_text_field($status),
+				'message' => $message,
+				'smtplogs' => sanitize_textarea_field($log),
+			);
+			$wpdb->insert($table_name, $data_to_insert);
 		}
-		$log = isset($_SESSION['debug_log']) ? $_SESSION['debug_log'] : null;
-		$data_to_insert = array(
-			'time' => current_time('mysql'),
-			'recipient' => sanitize_email($to),
-			'subject' => sanitize_text_field($subject),
-			'headers' => sanitize_text_field($headers),
-			'status' => sanitize_text_field($status),
-			'message' => $message,
-			'smtplogs' => sanitize_textarea_field($log),
-		);
-		$wpdb->insert($table_name, $data_to_insert);
 	}
 
 	function get_form_data()
@@ -398,6 +404,17 @@ class Wpoven_Smtp_Suresend_Admin
 			}
 		}
 
+		$smtp_logging_status = array(
+			'id'       => 'smtp-logging-status',
+			'type'     => 'button_set',
+			'title'    => esc_html__('SMTP Logs', 'WPOven SMTP Suresend'),
+			'desc'     => esc_html__('Enable or disable smtp mail logging.', 'WPOven SMTP Suresend'),
+			'options' => array(
+				'0' => 'Disable',
+				'1' => 'Enable'
+			),
+			'default' => '0'
+		);
 
 		$from_email_address = array(
 			'id'      => 'from-email',
@@ -491,6 +508,7 @@ class Wpoven_Smtp_Suresend_Admin
 
 		);
 
+		$fields[] = $smtp_logging_status;
 		$fields[] = $from_email_address;
 		$fields[] = $from_name;
 		$fields[] = $smtp_method_options;
@@ -754,7 +772,7 @@ class Wpoven_Smtp_Suresend_Admin
 			//'menu_type'                 => 'menu',
 			'allow_sub_menu'            => true,
 			//	'menu_title'                => esc_html__('WPOven Plugins', 'WPOven Suresend'),
-			//'page_title'                => esc_html__('Plugin  Suresend', 'WPOven Suresend'),
+			'page_title'                => esc_html__('WPOven SMTP Suresend', 'WPOven Suresend'),
 			'disable_google_fonts_link' => false,
 			'admin_bar'                 => false,
 			'admin_bar_icon'            => 'dashicons-portfolio',
