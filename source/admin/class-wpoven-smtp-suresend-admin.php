@@ -319,6 +319,7 @@ class Wpoven_Smtp_Suresend_Admin
 		global $wpdb;
 		$options = get_option(WPOVEN_SMTP_SURESEND_SLUG);
 		$smtp_logging_status = isset($options['smtp-logging-status']) ? $options['smtp-logging-status'] : false;
+		
 		if ($smtp_logging_status) {
 			$table_name = $wpdb->prefix . 'wpoven_smtp_suresend_logs';
 			if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
