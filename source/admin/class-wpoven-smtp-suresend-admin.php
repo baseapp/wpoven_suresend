@@ -9,6 +9,8 @@ use function PHPSTORM_META\type;
 use phpseclib3\Crypt\RSA;
 use phpseclib3\Crypt\PublicKeyLoader;
 
+
+
 /**
  * The admin-specific functionality of the plugin.
  *
@@ -319,7 +321,7 @@ class Wpoven_Smtp_Suresend_Admin
 		global $wpdb;
 		$options = get_option(WPOVEN_SMTP_SURESEND_SLUG);
 		$smtp_logging_status = isset($options['smtp-logging-status']) ? $options['smtp-logging-status'] : false;
-		
+
 		if ($smtp_logging_status) {
 			$table_name = $wpdb->prefix . 'wpoven_smtp_suresend_logs';
 			if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
@@ -359,8 +361,79 @@ class Wpoven_Smtp_Suresend_Admin
 		$text_format = isset($_POST['text_format']) ? $_POST['text_format'] : false;
 		if ($emailTo) {
 			$emailTo = sanitize_text_field($_POST['email_to']);
-			$subject = 'SMTP Test';
-			$message = 'This is a SMTP test mail.';
+			$subject = 'SMTP Test Email';
+			$domain = wp_parse_url(site_url(), PHP_URL_HOST);
+			$message = <<<HTML
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+</head>
+
+<body style="margin:0;padding:0;background:#f6f7f9;font-family:Arial,Helvetica,sans-serif;">
+<table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;">
+<tr>
+<td align="center">
+
+<table width="600" cellpadding="0" cellspacing="0"
+style="background:#ffffff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);padding:40px;text-align:center;">
+
+<!-- CHECK ICON -->
+<tr>
+<td style="padding-bottom:20px;">
+    <div style="
+        width:64px;
+        height:64px;
+        margin:0 auto;
+        border-radius:50%;
+        background:#22c55e;
+        color:#ffffff;
+        font-size:34px;
+        line-height:64px;
+        font-weight:bold;">
+        ✓
+    </div>
+</td>
+</tr>
+
+<!-- MESSAGE -->
+<tr>
+<td>
+    <h2 style="color:#111827;margin:0 0 10px;font-size:20px;">
+        Congrats, test email was sent successfully!
+    </h2>
+
+    <p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0;">
+        Thank you for testing your SMTP configuration.
+        Your email delivery system is working correctly.
+    </p>
+</td>
+</tr>
+
+<!-- SIGNATURE -->
+<tr>
+<td style="padding-top:30px;">
+    <p style="margin:0;font-size:14px;color:#374151;">
+        <strong>WPOven SMTP Suresend</strong><br>
+        a <a href="https://www.wpoven.com">WPOven</a> product
+    </p>
+</td>
+</tr>
+
+</table>
+
+<p style="font-size:11px;color:#9ca3af;margin-top:20px;">
+Sent from {$domain}
+</p>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
+HTML;
 
 			$form_data = array(
 				'emailTo' => $emailTo,
@@ -420,7 +493,7 @@ class Wpoven_Smtp_Suresend_Admin
 		$from_email_address = array(
 			'id'      => 'from-email',
 			'type'    => 'text',
-			'title'   => 'From Email Address',
+			'title'   => 'From Email',
 			'placeholder'  => 'example@gmail.com',
 			'validate' => 'not_empty',
 			'desc'  => 'Sender address for sending emails.',
@@ -545,6 +618,9 @@ class Wpoven_Smtp_Suresend_Admin
 		$headers .= 'Reply-To: ' . $to . "\r\n";
 		$style = null;
 		$content = null;
+		if ($from == null) {
+			$content = 'Missing "From Email" in SMTP settings.';
+		}
 		$attachments = array();
 
 		if ($form_data) {
@@ -552,16 +628,16 @@ class Wpoven_Smtp_Suresend_Admin
 				case 'php':
 					//wp_mail($to, $subject, $message, $custom_headers, $attachments);
 					$responce = $this->send_mail($to, $subject, $message, $headers, $attachments, $status = null, $text_format);
-					$style = 'warning';
-					$content = 'Failed to send the test email.';
+					$style = 'critical';
+					$content .= ' Failed to send the test email.';
 					if ($responce) {
 						$content = 'Test email was sent successfully!';
 						$style = 'success';
 					}
 					break;
 				case 'smtp':
-					$style = 'warning';
-					$content = 'Failed to send the test email.';
+					$style = 'critical';
+					$content .= ' Failed to send the test email.';
 					$responce = $this->send_mail($to, $subject, $message, $headers, $attachments, $status = null, $text_format);
 					if ($responce) {
 						$style = 'success';
@@ -648,22 +724,34 @@ class Wpoven_Smtp_Suresend_Admin
 		$ns = ['8.8.8.8', '8.8.4.4'];
 
 		if ($this->validateDkimDomain($dkim_domain)) {
-			$resolver = new Net_DNS2_Resolver(['nameservers' => $ns]);
-			$result = $resolver->query($dkim_dns_record, 'TXT');
-			foreach ($result->answer as $record) {
-				if ($record->type === 'TXT') {
-					$dns_result = implode(' ', $record->text);
+			try {
+				$resolver = new Net_DNS2_Resolver([
+					'nameservers' => $ns,
+					'timeout'     => 5
+				]);
+
+				$result = $resolver->query($dkim_dns_record, 'TXT');
+
+				if (!empty($result->answer)) {
+					foreach ($result->answer as $record) {
+						if ($record->type === 'TXT') {
+							$dns_result = implode(' ', $record->text);
+						}
+					}
 				}
+			} catch (Net_DNS2_Exception $e) {
+				// Graceful handling — no fatal error
+				$dns_result = null;
+				$conn = 'DNS lookup failed for "' . esc_html($dkim_dns_record) . '". Please check the domain or DNS record.';
+				$statusColor = 'red';
+				$style = 'critical';
 			}
 		}
 
 		$statusColor = "red";
 		$style = 'critical';
-		if (($dkim_domain == null || !$this->validateDkimDomain($dkim_domain)) && $enable_dkim == true) {
+		if (($dkim_domain == null && $enable_dkim == true)) {
 			$conn = "Please provide valid domain name.";
-		}
-		if ($dkim_domain != null && $enable_dkim == true && $this->validateDkimDomain($dkim_domain)) {
-			$conn = 'The DKIM key is missing from DNS. Make sure to add the DKIM key to your DNS record for "' . $dkim_dns_record . '".';
 		}
 
 		$fields = array();
@@ -855,11 +943,13 @@ class Wpoven_Smtp_Suresend_Admin
 		Redux::set_section(
 			$opt_name,
 			array(
-				'title'      => '<a href="admin.php?page=wpoven-smtp-suresend-smtp-logs"  class="smtp-logs"> <span class="group_title">SMTP Logs</span></a>',
+				'title'      => '<a href="admin.php?page=wpoven-smtp-suresend-smtp-logs"  class="smtp-logs">
+								<span class="dashicons dashicons-media-text" style="margin-right:6px;"></span>
+								<strong><span class="group_title">SMTP Logs</span></strong></a>',
 				'id'         => 'smtp-logs',
 				'class'      => 'smtp-logs',
 				'parent'     => 'smtp-suresend',
-				'subsection' => true,
+				'subsection' => false,
 				'icon'       => '', //el el-list
 			)
 		);

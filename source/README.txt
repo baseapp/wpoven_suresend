@@ -1,10 +1,10 @@
 === WPOven SMTP Suresend ===
-Contributors: [WPOven](https://www.wpoven.com/)  
-Requires at least: 6.6.2  
-Tested up to: 6.6.2  
-Stable tag: 1.0.0  
-License: GPLv2 or later  
-License URI: http://www.gnu.org/licenses/gpl-2.0.html  
+Contributors: [WPOven](https://www.wpoven.com/)
+Requires at least: 6.6.2
+Tested up to: 6.6.2
+Stable tag: 1.0.1
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 WPOven SMTP Suresend is a powerful WordPress plugin designed to streamline email delivery, ensuring that all your site’s emails are sent reliably and securely. With features for testing, logging, and authentication, this plugin is ideal for those who need consistent email performance and tracking.
@@ -43,6 +43,9 @@ Yes, you can resend emails that were previously sent using our plugin.
 Yes, you can delete sent emails from the SMTP logs.
 
 == Changelog ==
+
+= Version 1.0.1
+* Added exception handling to prevent email sending when the "From Email" address is not configured.
 
 = 1.0.0 =
 * Initial release with enhanced email reliability, testing, logging, and DKIM settings for secure, trackable, and consistent delivery.

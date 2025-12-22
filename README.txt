@@ -1,10 +1,10 @@
 === WPOven SMTP Suresend ===
-Contributors: [WPOven](https://www.wpoven.com/)  
-Requires at least: 6.6.2  
-Tested up to: 6.6.2  
-Stable tag: 1.0.0  
-License: GPLv2 or later  
-License URI: http://www.gnu.org/licenses/gpl-2.0.html  
+Contributors: [WPOven](https://www.wpoven.com/)
+Requires at least: 6.6.2
+Tested up to: 6.6.2
+Stable tag: 1.0.1
+License: GPLv2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 == Description ==
 WPOven SMTP Suresend is a powerful WordPress plugin designed to streamline email delivery, ensuring that all your site’s emails are sent reliably and securely. With features for testing, logging, and authentication, this plugin is ideal for those who need consistent email performance and tracking.
@@ -17,32 +17,31 @@ WPOven SMTP Suresend is a powerful WordPress plugin designed to streamline email
 3. **DKIM (DomainKeys Identified Mail) Settings:** Configure DKIM authentication to improve email deliverability and prevent messages from ending up in spam folders. With DKIM, emails are signed with a unique signature, verifying your domain and increasing trust with email providers.
 
 == Screenshots ==
-1. ![SMTP Suresend](https://github.com/baseapp/wpoven_suresend/blob/main/assets/screenshots/wpoven-smtp-suresend.png)
+1. ![SMTP Suresend](https://raw.githubusercontent.com/baseapp/wpoven_suresend/main/assets/screenshots/wpoven-smtp-suresend.png)
 
 == Installation ==
 1. **Download the Plugin:**
-   - To get the latest version of WPOven SMTP Suresend, you can either:
-     - [Visit WPOven's website](https://www.wpoven.com/plugins/wpoven-smtp-suresend) to learn more about the plugin.
-     - Download directly from the GitHub repository: [Download](https://github.com/baseapp/wpoven_suresend/releases/download/1.0.0/wpoven-smtp-suresend-2024-11-08.zip).
+- To get the latest version of WPOven SMTP Suresend, you can either:
+- [Visit WPOven's website](https://www.wpoven.com/plugins/wpoven-smtp-suresend) to learn more about the plugin.
 
 2. **Upload the Plugin:**
-   - Log in to your WordPress admin dashboard.
-   - Navigate to **Plugins > Add New**.
-   - Click on the **Upload Plugin** button.
-   - Choose the downloaded ZIP file and click **Install Now**.
+- Log in to your WordPress admin dashboard.
+- Navigate to **Plugins > Add New**.
+- Click on the **Upload Plugin** button.
+- Choose the downloaded ZIP file and click **Install Now**.
 
 3. **Activate the Plugin:**
-   - After installation, click on the **Activate Plugin** link.
+- After installation, click on the **Activate Plugin** link.
 
 4. **Configure Plugin Settings:**
-   - Once activated, go to **SMTP Suresend Settings > WPOven SMTP Suresend** in the WordPress admin menu.
-   - Configure the plugin settings as per your requirements.
+- Once activated, go to **SMTP Suresend Settings > WPOven SMTP Suresend** in the WordPress admin menu.
+- Configure the plugin settings as per your requirements.
 
 5. **Usage:**
-   - WPOven SMTP Suresend enhances email reliability by testing delivery, tracking logs, and ensuring secure DKIM authentication for consistent, professional communication.
+- WPOven SMTP Suresend enhances email reliability by testing delivery, tracking logs, and ensuring secure DKIM authentication for consistent, professional communication.
 
 6. **Regular Updates:**
-   - Keep the plugin updated for the latest features and security improvements. You can update the plugin through the **Plugins** section in your WordPress admin dashboard.
+- Keep the plugin updated for the latest features and security improvements. You can update the plugin through the **Plugins** section in your WordPress admin dashboard.
 
 == Frequently Asked Questions ==
 
@@ -68,6 +67,9 @@ Yes, you can resend emails that were previously sent using our plugin.
 Yes, you can delete sent emails from the SMTP logs.
 
 == Changelog ==
+
+= Version 1.0.1
+* Added exception handling to prevent email sending when the "From Email" address is not configured.
 
 = 1.0.0 =
 * Initial release with enhanced email reliability, testing, logging, and DKIM settings for secure, trackable, and consistent delivery.

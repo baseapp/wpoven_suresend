@@ -16,7 +16,7 @@
  * Plugin Name:       WPOven SMTP Suresend
  * Plugin URI:        https://www.wpoven.com/plugins/wpoven-smtp-suresend
  * Description:       Activate the SMTP plugin to secure your site's email delivery by configuring the SMTP server of your preferred mail service.
- * Version:           1.0.0
+ * Version:           1.0.1
  * Author:            WPOven
  * Author URI:        https://www.wpoven.com/
  * License:           GPL-2.0+
@@ -35,7 +35,7 @@ if (!defined('WPINC')) {
  * Start at version 1.0.0 and use SemVer - https://semver.org
  * Rename this for your plugin and update it as you release new versions.
  */
-define('WPOVEN_SMTP_SURESEND_VERSION', '1.0.0');
+define('WPOVEN_SMTP_SURESEND_VERSION', '1.0.1');
 if (!defined('WPOVEN_SMTP_SURESEND_SLUG'))
 	define('WPOVEN_SMTP_SURESEND_SLUG', 'wpoven-smtp-suresend');
 

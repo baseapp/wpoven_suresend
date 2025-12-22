@@ -3,7 +3,7 @@
 **Contributors:** [WPOven](https://www.wpoven.com/)  
 **Requires at least:** 6.6.2  
 **Tested up to:** 6.6.2  
-**Stable tag:** 1.0.0  
+**Stable tag:** 1.0.1  
 **License:** GPLv2 or later  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  
 
@@ -81,6 +81,9 @@ Yes, you can resend emails that were previously sent using our plugin.
 Yes, you can delete sent emails from the SMTP logs.
 
 ## Changelog
+
+### Version 1.0.1
+- Added exception handling to prevent email sending when the "From Email" address is not configured.
 
 ### 1.0.0
 - Initial release with enhance email reliability with testing, logging, and DKIM settings for secure, trackable, and consistent delivery.
