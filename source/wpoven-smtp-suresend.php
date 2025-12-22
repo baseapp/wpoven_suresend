@@ -64,7 +64,7 @@ $wpoven_smtp_suresend_update_checker->getVcsApi()->enableReleaseAssets();
  * The code that runs during plugin activation.
  * This action is documented in includes/class-wpoven-smtp-suresend-activator.php
  */
-function activate_wpoven_smtp_suresend()
+function wpoven_smtp_suresend_activate()
 {
 	require_once plugin_dir_path(__FILE__) . 'includes/class-wpoven-smtp-suresend-activator.php';
 	Wpoven_Smtp_Suresend_Activator::activate();
@@ -74,14 +74,14 @@ function activate_wpoven_smtp_suresend()
  * The code that runs during plugin deactivation.
  * This action is documented in includes/class-wpoven-smtp-suresend-deactivator.php
  */
-function deactivate_wpoven_smtp_suresend()
+function wpoven_smtp_suresend_deactivate()
 {
 	require_once plugin_dir_path(__FILE__) . 'includes/class-wpoven-smtp-suresend-deactivator.php';
 	Wpoven_Smtp_Suresend_Deactivator::deactivate();
 }
 
-register_activation_hook(__FILE__, 'activate_wpoven_smtp_suresend');
-register_deactivation_hook(__FILE__, 'deactivate_wpoven_smtp_suresend');
+register_activation_hook(__FILE__, 'wpoven_smtp_suresend_activate');
+register_deactivation_hook(__FILE__, 'wpoven_smtp_suresend_deactivate');
 
 /**
  * The core plugin class that is used to define internationalization,
@@ -98,12 +98,10 @@ require plugin_dir_path(__FILE__) . 'includes/class-wpoven-smtp-suresend.php';
  *
  * @since    1.0.0
  */
-function run_wpoven_smtp_suresend()
-{
+add_action('plugins_loaded', function () {
 	$plugin = new Wpoven_Smtp_Suresend();
 	$plugin->run();
-}
-run_wpoven_smtp_suresend();
+});
 
 
 function wpoven_smtp_suresend_plugin_settings_link($links)
