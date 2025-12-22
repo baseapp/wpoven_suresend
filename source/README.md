@@ -1,8 +1,8 @@
 # WPOven SMTP Suresend
 
 **Contributors:** [WPOven](https://www.wpoven.com/)  
-**Requires at least:** 6.6.2  
-**Tested up to:** 6.6.9 
+**Requires at least:** 6.2  
+**Tested up to:** 6.9 
 **Stable tag:** 1.0.1  
 **License:** GPLv2 or later  
 **License URI:** [http://www.gnu.org/licenses/gpl-2.0.html](http://www.gnu.org/licenses/gpl-2.0.html)  

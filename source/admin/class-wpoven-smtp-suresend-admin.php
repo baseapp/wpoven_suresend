@@ -363,77 +363,78 @@ class Wpoven_Smtp_Suresend_Admin
 			$emailTo = sanitize_text_field($_POST['email_to']);
 			$subject = 'SMTP Test Email';
 			$domain = wp_parse_url(site_url(), PHP_URL_HOST);
-			$message = <<<HTML
-<!DOCTYPE html>
-<html>
-<head>
-<meta charset="UTF-8">
-<title></title>
-</head>
+			ob_start();
+?>
+			<!DOCTYPE html>
+			<html>
 
-<body style="margin:0;padding:0;background:#f6f7f9;font-family:Arial,Helvetica,sans-serif;">
-<table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;">
-<tr>
-<td align="center">
+			<head>
+				<meta charset="UTF-8">
+				<title></title>
+			</head>
 
-<table width="600" cellpadding="0" cellspacing="0"
-style="background:#ffffff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);padding:40px;text-align:center;">
+			<body style="margin:0;padding:0;background:#f6f7f9;font-family:Arial,Helvetica,sans-serif;">
+				<table width="100%" cellpadding="0" cellspacing="0" style="padding:30px 0;">
+					<tr>
+						<td align="center">
 
-<!-- CHECK ICON -->
-<tr>
-<td style="padding-bottom:20px;">
-    <div style="
-        width:64px;
-        height:64px;
-        margin:0 auto;
-        border-radius:50%;
-        background:#22c55e;
-        color:#ffffff;
-        font-size:34px;
-        line-height:64px;
-        font-weight:bold;">
-        ✓
-    </div>
-</td>
-</tr>
+							<table width="600" cellpadding="0" cellspacing="0"
+								style="background:#ffffff;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,0.05);padding:40px;text-align:center;">
 
-<!-- MESSAGE -->
-<tr>
-<td>
-    <h2 style="color:#111827;margin:0 0 10px;font-size:20px;">
-        Congrats, test email was sent successfully!
-    </h2>
+								<tr>
+									<td style="padding-bottom:20px;">
+										<div style="width:64px;height:64px;margin:0 auto;border-radius:50%;
+        background:#22c55e;color:#ffffff;font-size:34px;line-height:64px;font-weight:bold;">
+											✓
+										</div>
+									</td>
+								</tr>
 
-    <p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0;">
-        Thank you for testing your SMTP configuration.
-        Your email delivery system is working correctly.
-    </p>
-</td>
-</tr>
+								<tr>
+									<td>
+										<h2 style="color:#111827;margin:0 0 10px;font-size:20px;">
+											<?php esc_html_e('Congrats, test email was sent successfully!', 'wpoven-smtp-suresend'); ?>
+										</h2>
 
-<!-- SIGNATURE -->
-<tr>
-<td style="padding-top:30px;">
-    <p style="margin:0;font-size:14px;color:#374151;">
-        <strong>WPOven SMTP Suresend</strong><br>
-        a <a href="https://www.wpoven.com">WPOven</a> product
-    </p>
-</td>
-</tr>
+										<p style="color:#6b7280;font-size:14px;line-height:1.6;margin:0;">
+											<?php esc_html_e(
+												'Thank you for testing your SMTP configuration. Your email delivery system is working correctly.',
+												'wpoven-smtp-suresend'
+											); ?>
+										</p>
+									</td>
+								</tr>
 
-</table>
+								<tr>
+									<td style="padding-top:30px;">
+										<p style="margin:0;font-size:14px;color:#374151;">
+											<strong>WPOven SMTP Suresend</strong><br>
+											a <a href="https://www.wpoven.com">WPOven</a> product
+										</p>
+									</td>
+								</tr>
 
-<p style="font-size:11px;color:#9ca3af;margin-top:20px;">
-Sent from {$domain}
-</p>
+							</table>
 
-</td>
-</tr>
-</table>
+							<p style="font-size:11px;color:#9ca3af;margin-top:20px;">
+								<?php
+								printf(
+									/* translators: %s: site domain */
+									esc_html__('Sent from %s', 'wpoven-smtp-suresend'),
+									esc_html($domain)
+								);
+								?>
+							</p>
 
-</body>
-</html>
-HTML;
+						</td>
+					</tr>
+				</table>
+
+			</body>
+
+			</html>
+<?php
+			$message = ob_get_clean();
 
 			$form_data = array(
 				'emailTo' => $emailTo,

@@ -36,10 +36,6 @@ class Wpoven_Smtp_Suresend_i18n
 	public function load_plugin_textdomain()
 	{
 
-		load_plugin_textdomain(
-			'wpoven-smtp-suresend',
-			false,
-			dirname(dirname(plugin_basename(__FILE__))) . '/languages/'
-		);
+		//
 	}
 }
