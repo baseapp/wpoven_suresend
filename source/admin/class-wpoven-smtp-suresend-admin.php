@@ -91,6 +91,12 @@ class Wpoven_Smtp_Suresend_Admin
 		require_once ABSPATH . WPINC . '/pluggable.php';
 
 		add_filter('wp_mail', [$this, 'log_email']);
+
+		add_action('admin_footer', array($this, 'add_ajax_nonce_to_admin_footer'));
+		add_action('wp_footer', array($this, 'add_ajax_nonce_to_admin_footer'));
+
+		add_action('wpoven_smtp_log_cleanup_event', [$this, 'wpoven_cleanup_smtp_logs']);
+		add_action('wp_ajax_wpoven_run_smtp_purge_all_logs', [$this, 'wpoven_purge_all_smtp_logs']);
 	}
 
 	/**
@@ -137,6 +143,21 @@ class Wpoven_Smtp_Suresend_Admin
 		 */
 
 		wp_enqueue_script($this->plugin_name, plugin_dir_url(__FILE__) . 'js/wpoven-smtp-suresend-admin.js', array('jquery'), $this->version, false);
+	}
+
+	/**
+	 * Adds an AJAX nonce to the admin footer for security in AJAX requests.
+	 */
+	function add_ajax_nonce_to_admin_footer()
+	{
+?>
+		<script type="text/javascript">
+			var ajax_nonce = '<?php echo esc_html(wp_create_nonce('wpoven_ajax_nonce')); ?>';
+			var ajax_url = '<?php echo esc_html(admin_url('admin-ajax.php')); ?>';
+			document.write('<div id="wpoven-ajax-nonce" style="display:none;">' + ajax_nonce + '</div>');
+			document.write('<div id="wpoven-ajax-url" style="display:none;">' + ajax_url + '</div>');
+		</script>
+		<?php
 	}
 
 	/**
@@ -314,7 +335,90 @@ class Wpoven_Smtp_Suresend_Admin
 	}
 
 	/**
-	 *Save logs in database.
+	 * Purge all SMTP email logs from database.
+	 * @since 1.0.2
+	 */
+	function wpoven_purge_all_smtp_logs()
+	{
+
+		global $wpdb;
+		$return_array = array();
+
+		$table_name = $wpdb->prefix . 'wpoven_smtp_suresend_logs';
+
+		// Check if table exists
+		$table_exists = $wpdb->get_var(
+			$wpdb->prepare(
+				"SHOW TABLES LIKE %s",
+				$table_name
+			)
+		);
+
+		if ($table_exists !== $table_name) {
+			$return_array['status']    = 'error';
+			die(wp_json_encode($return_array));
+		}
+
+		// Delete all logs
+		$deleted = $wpdb->query("DELETE FROM {$table_name}");
+
+		if ($deleted !== false) {
+			$return_array['status']      = 'ok';
+		} else {
+			$return_array['status']    = 'error';
+		}
+
+		die(wp_json_encode($return_array));
+	}
+
+
+
+	/**
+	 * Cleanup old SMTP email logs from database.
+	 * @since 1.0.2
+	 */
+	function wpoven_cleanup_smtp_logs()
+	{
+		global $wpdb;
+
+		$options   = get_option(WPOVEN_SMTP_SURESEND_SLUG);
+		$retention = isset($options['smtp-log-retention'])
+			? intval($options['smtp-log-retention'])
+			: 30;
+
+		// Unlimited → do nothing
+		if ($retention === 0) {
+			return;
+		}
+
+		$table = $wpdb->prefix . 'wpoven_smtp_suresend_logs';
+
+		// ✅ CORRECT table existence check
+		$table_exists = $wpdb->get_var(
+			$wpdb->prepare(
+				"SHOW TABLES LIKE %s",
+				$table
+			)
+		);
+
+		if ($table_exists !== $table) {
+			return;
+		}
+
+		// ✅ Use WordPress time (timezone-safe)
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM `$table`
+			 WHERE `time` < DATE_SUB( %s, INTERVAL %d DAY )",
+				current_time('mysql'),
+				$retention
+			)
+		);
+	}
+
+
+	/**
+	 * Save logs in database.
 	 */
 	function wpoven_save_smtp_logs($to, $subject, $message, $headers, $status)
 	{
@@ -324,6 +428,8 @@ class Wpoven_Smtp_Suresend_Admin
 
 		if ($smtp_logging_status) {
 			$table_name = $wpdb->prefix . 'wpoven_smtp_suresend_logs';
+
+
 			if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
 				$charset_collate = $wpdb->get_charset_collate();
 				$sql = "CREATE TABLE $table_name (
@@ -364,7 +470,7 @@ class Wpoven_Smtp_Suresend_Admin
 			$subject = 'SMTP Test Email';
 			$domain = wp_parse_url(site_url(), PHP_URL_HOST);
 			ob_start();
-?>
+		?>
 			<!DOCTYPE html>
 			<html>
 
@@ -448,6 +554,7 @@ class Wpoven_Smtp_Suresend_Admin
 		return $form_data;
 	}
 
+
 	/**
 	 * SMTP Server General Settings.
 	 */
@@ -489,6 +596,33 @@ class Wpoven_Smtp_Suresend_Admin
 				'1' => 'Enable'
 			),
 			'default' => '0'
+		);
+
+		$log_retention = array(
+			'id'       => 'smtp-log-retention',
+			'type'     => 'select',
+			'title'    => esc_html__('Log Retention Period', 'wpoven-smtp-suresend'),
+			'desc'     => esc_html__('Choose how long SMTP logs should be kept.', 'wpoven-smtp-suresend'),
+			'options'  => array(
+				'7'   => '7 Days',
+				'30'  => '30 Days (default)',
+				'90'  => '90 Days',
+				'0'   => 'Unlimited',
+			),
+			'default'  => '30',
+			'required' => array('smtp-logging-status', 'equals', '1'),
+		);
+
+		$purge_smtp_logs = array(
+			'id'         => 'purge-smtp-logs',
+			'class'    => 'purge-smtp-logs',
+			'type'       => 'button_set',
+			'title'      => '&nbsp;',
+			'options'    => array(
+				'enabled'  => 'Purge All Logs',
+			),
+			'default'    => 'enabled',
+			'required' => array('smtp-logging-status', 'equals', '1'),
 		);
 
 		$from_email_address = array(
@@ -584,6 +718,8 @@ class Wpoven_Smtp_Suresend_Admin
 		);
 
 		$fields[] = $smtp_logging_status;
+		$fields[] = $log_retention;
+		$fields[] = $purge_smtp_logs;
 		$fields[] = $from_email_address;
 		$fields[] = $from_name;
 		$fields[] = $smtp_method_options;
@@ -946,7 +1082,7 @@ class Wpoven_Smtp_Suresend_Admin
 			array(
 				'title'      => '<a href="admin.php?page=wpoven-smtp-suresend-smtp-logs"  class="smtp-logs">
 								<span class="dashicons dashicons-media-text" style="margin-right:6px;"></span>
-								<strong><span class="group_title">SMTP Logs</span></strong></a>',
+								<span class="group_title">SMTP Logs</span></a>',
 				'id'         => 'smtp-logs',
 				'class'      => 'smtp-logs',
 				'parent'     => 'smtp-suresend',
@@ -961,7 +1097,7 @@ class Wpoven_Smtp_Suresend_Admin
 	 */
 	function smtp_logs()
 	{
-		echo '<div class="wrap"><h1>WPOven SMTP Logs</h1>';
+		echo '<div class="wrap"><strong> <h1 style="font-weight: 500; font-size: 24px;">WPOven SMTP Logs</h1></strong>';
 		echo '<form method="post">';
 
 		$table = new WPOven_SMTP_Suresend_List_Table();

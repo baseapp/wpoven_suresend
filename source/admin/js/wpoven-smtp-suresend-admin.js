@@ -56,6 +56,45 @@
       element.remove();
     }
 
+    async function suresendPurgeSMTPLogs() {
+      const ajax_nonce = document.getElementById("wpoven-ajax-nonce").innerText;
+      const ajax_url = document.getElementById("wpoven-ajax-url").innerText;
+      const response = await fetch(ajax_url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded; charset=utf-8",
+        },
+        body: `action=wpoven_run_smtp_purge_all_logs&security=${ajax_nonce}`,
+        credentials: "same-origin",
+        timeout: 10000,
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.status === "ok") {
+          alert("All SMTP logs have been purged successfully.");
+        } else {
+          alert("Error purging SMTP logs: " + data.message);
+        }
+      }
+    }
+
+    var PurgeSMTPLogs = document.querySelector('[data-id="purge-smtp-logs"]');
+
+    if (PurgeSMTPLogs) {
+      PurgeSMTPLogs.addEventListener("click", function (event) {
+        event.preventDefault(); // Prevent any default action
+        event.stopPropagation(); // Stop the event from bubbling up
+        if (
+          confirm(
+            "Are you sure you want to purge all SMTP logs? This action cannot be undone."
+          )
+        ) {
+          suresendPurgeSMTPLogs();
+        }
+      });
+    }
+
     // document
     //   .querySelector("input#redux_bottom_save")
     //   .addEventListener("click", function () {
