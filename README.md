@@ -1,5 +1,7 @@
 # WPOven SMTP Suresend
 
+![PHP Check Status](https://github.com/baseapp/wpoven_suresend/actions/workflows/action.yml/badge.svg)
+
 **Contributors:** [WPOven](https://www.wpoven.com/)  
 **Requires at least:** 6.2  
 **Tested up to:** 6.9 
@@ -82,7 +84,7 @@ Yes, you can delete sent emails from the SMTP logs.
 
 ## Changelog
 
-### Version 1.0.1
+### 1.0.1
 - Added exception handling to prevent email sending when the "From Email" address is not configured.
 
 ### 1.0.0

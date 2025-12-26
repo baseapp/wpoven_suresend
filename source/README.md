@@ -55,7 +55,7 @@ Yes, you can delete sent emails from the SMTP logs.
 
 ## Changelog
 
-### Version 1.0.1
+### 1.0.1
 - Added exception handling to prevent email sending when the "From Email" address is not configured.
 
 ### 1.0.0
