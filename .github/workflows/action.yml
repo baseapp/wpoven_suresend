@@ -8,7 +8,7 @@ on:
       wp_version:
         description: "WordPress version to test against"
         required: true
-        default: "6.6.2"
+        default: "6.9"
       plugin_version:
         description: "Plugin version to release"
         required: true
