@@ -12,7 +12,7 @@ on:
       plugin_version:
         description: "Plugin version to release"
         required: true
-        default: "1.0.1"
+        default: "1.0.2"
 
 env:
   PLUGIN_SLUG: "wpoven-smtp-suresend"
@@ -157,7 +157,7 @@ jobs:
         id: versions
         run: |
           RELEASE_DATE=$(date +'%Y-%m-%d')
-          PLUGIN_VERSION="${{ github.event.inputs.plugin_version || '1.0.1' }}"
+          PLUGIN_VERSION="${{ github.event.inputs.plugin_version || '1.0.2' }}"
           ZIP_NAME="${{ env.PLUGIN_SLUG }}-${RELEASE_DATE}.zip"
 
           echo "release_date=$RELEASE_DATE" >> $GITHUB_OUTPUT
